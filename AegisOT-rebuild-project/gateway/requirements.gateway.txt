@@ -1,0 +1,9 @@
+# Gateway requirements
+fastapi==0.95.2
+uvicorn==0.21.1
+redis==5.0.1
+pyyaml==6.0.1
+prometheus-client==0.19.0
+pydantic==1.10.13
+requests==2.31.0
+cryptography==41.0.7

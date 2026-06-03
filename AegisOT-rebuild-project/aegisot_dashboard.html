@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AegisOT Security Gateway</title>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+
+body{
+  font-family:system-ui,sans-serif;
+  background:#f4f7fb;
+  color:#1f2937;
+  min-height:100vh;
+}
+
+.topbar{
+  background:#ffffff;
+  border-bottom:1px solid #dbe3ef;
+  padding:14px 24px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  box-shadow:0 2px 10px rgba(15,23,42,.06);
+}
+
+.logo{display:flex;align-items:center;gap:10px}
+.logo-icon{width:32px;height:32px;background:#2563eb;border-radius:6px;display:flex;align-items:center;justify-content:center}
+.logo-icon svg{width:18px;height:18px;fill:white}
+.logo-text{font-size:16px;font-weight:700;color:#111827}
+.logo-sub{font-size:11px;color:#64748b;margin-top:1px}
+
+.status-bar{display:flex;align-items:center;gap:16px;font-size:12px;color:#64748b}
+#last-update{font-size:11px;color:#64748b}
+
+.main{padding:20px 24px;display:grid;gap:16px;background:#f4f7fb}
+
+.links-row{display:flex;gap:10px;margin-bottom:4px;flex-wrap:wrap}
+.ext-link{
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  background:#eaf0ff;
+  color:#1e3a8a;
+  border-radius:6px;
+  padding:7px 14px;
+  font-size:12px;
+  text-decoration:none;
+  border:1px solid #c7d2fe;
+  font-weight:600;
+}
+.ext-link:hover{background:#dbeafe;color:#1d4ed8}
+
+.refresh-btn{
+  background:#2563eb;
+  color:white;
+  border:none;
+  border-radius:6px;
+  padding:6px 14px;
+  font-size:12px;
+  cursor:pointer;
+}
+.refresh-btn:hover{background:#1d4ed8}
+
+.grafana-link{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  background:#f97316;
+  color:white;
+  border-radius:6px;
+  padding:6px 14px;
+  font-size:12px;
+  text-decoration:none;
+  font-weight:600;
+}
+
+.metrics-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+
+.metric,.card{
+  background:#ffffff;
+  border:1px solid #dbe3ef;
+  border-radius:10px;
+  padding:16px;
+  box-shadow:0 4px 12px rgba(15,23,42,.08);
+}
+
+.metric-label,.card-title{
+  font-size:11px;
+  color:#64748b;
+  text-transform:uppercase;
+  letter-spacing:.5px;
+  margin-bottom:12px;
+  font-weight:700;
+}
+
+.metric-value{font-size:28px;font-weight:800}
+.metric-sub{font-size:11px;margin-top:4px;color:#64748b}
+
+.green{color:#16a34a}
+.red{color:#dc2626}
+.blue{color:#2563eb}
+.amber{color:#f59e0b}
+
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.row3{display:grid;grid-template-columns:2fr 1fr;gap:16px}
+
+.bar-row{margin-bottom:14px}
+.bar-label{display:flex;justify-content:space-between;font-size:13px;color:#334155;margin-bottom:5px;font-weight:600}
+.bar-track{background:#e5e7eb;border-radius:4px;height:8px}
+.bar-fill{height:8px;border-radius:4px;transition:width .5s}
+
+.container-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  font-size:13px;
+  padding:8px 0;
+  border-bottom:1px solid #e5e7eb;
+  color:#334155;
+}
+.container-row:last-child{border-bottom:none}
+
+.dot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:5px}
+.dot-green{background:#22c55e}
+.dot-red{background:#ef4444}
+.dot-amber{background:#f59e0b}
+
+.device-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.device-item{
+  background:#f1f5f9;
+  border:1px solid #e2e8f0;
+  border-radius:6px;
+  padding:9px 10px;
+  font-size:12px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+.device-name{color:#475569}
+.device-val{font-weight:700;color:#111827}
+
+.audit-table{width:100%;border-collapse:collapse;font-size:12px}
+.audit-table th{
+  text-align:left;
+  color:#475569;
+  padding:7px 8px;
+  border-bottom:1px solid #cbd5e1;
+  font-weight:700;
+  font-size:11px;
+  text-transform:uppercase;
+}
+.audit-table td{
+  padding:7px 8px;
+  border-bottom:1px solid #e5e7eb;
+  color:#1f2937;
+}
+
+.badge{
+  display:inline-block;
+  padding:3px 8px;
+  border-radius:5px;
+  font-size:10px;
+  font-weight:700;
+}
+.badge-green{background:#dcfce7;color:#15803d}
+.badge-red{background:#fee2e2;color:#b91c1c}
+.badge-blue{background:#dbeafe;color:#1d4ed8}
+.badge-yellow{background:#fef3c7;color:#92400e}
+
+.merkle-box{
+  background:#eef2ff;
+  border:1px solid #c7d2fe;
+  border-radius:6px;
+  padding:10px 12px;
+  font-size:11px;
+  font-family:monospace;
+  color:#1e3a8a;
+  word-break:break-all;
+  margin-top:8px;
+}
+
+.tamper-btn{
+  background:#dc2626;
+  color:#ffffff;
+  border:none;
+  border-radius:6px;
+  padding:6px 12px;
+  font-size:12px;
+  font-weight:700;
+  cursor:pointer;
+  margin-top:10px;
+}
+.tamper-btn:hover{background:#b91c1c}
+
+@media(max-width:900px){
+  .metrics-row,.row2,.row3{grid-template-columns:1fr}
+}
+</style>
+</head>
+
+<body>
+
+<div class="topbar">
+  <div class="logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 20 20"><path d="M10 1L2 5v5c0 4.5 3.3 8.7 8 10 4.7-1.3 8-5.5 8-10V5L10 1z"/></svg>
+    </div>
+    <div>
+      <div class="logo-text">AegisOT Security Gateway</div>
+      <div class="logo-sub">Unified OT Security Gateway — Live Monitor</div>
+    </div>
+  </div>
+  <div class="status-bar">
+    <span id="last-update">Connecting...</span>
+    <button class="refresh-btn" onclick="fetchAll()">Refresh</button>
+    <a class="grafana-link" href="http://localhost:3000" target="_blank">Grafana</a>
+  </div>
+</div>
+
+<div class="main">
+
+  <div class="links-row">
+    <a class="ext-link" href="http://localhost:8000/health" target="_blank">Gateway Health</a>
+    <a class="ext-link" href="http://localhost:8000/metrics" target="_blank">Prometheus Metrics</a>
+    <a class="ext-link" href="http://localhost:8001/state" target="_blank">Device State</a>
+    <a class="ext-link" href="http://localhost:9090" target="_blank">Prometheus UI</a>
+  </div>
+
+  <div class="metrics-row">
+    <div class="metric">
+      <div class="metric-label">Gateway status</div>
+      <div class="metric-value green" id="gw-status">--</div>
+      <div class="metric-sub" id="gw-redis">checking...</div>
+    </div>
+
+    <div class="metric">
+      <div class="metric-label">Commands allowed</div>
+      <div class="metric-value green" id="m-allowed">--</div>
+      <div class="metric-sub green">all checks passed</div>
+    </div>
+
+    <div class="metric">
+      <div class="metric-label">Commands blocked</div>
+      <div class="metric-value red" id="m-blocked">--</div>
+      <div class="metric-sub red" id="m-block-pct">-- % block rate</div>
+    </div>
+
+    <div class="metric">
+      <div class="metric-label">Merkle integrity</div>
+      <div class="metric-value blue" id="m-merkle-status">--</div>
+      <div class="metric-sub" id="m-merkle-root" style="font-family:monospace;font-size:10px">--</div>
+    </div>
+  </div>
+
+  <div class="row2">
+    <div class="card">
+      <div class="card-title">Block reasons breakdown</div>
+
+      <div class="bar-row">
+        <div class="bar-label"><span>ACL denied</span><span id="br-acl">0</span></div>
+        <div class="bar-track"><div class="bar-fill" id="bf-acl" style="width:0%;background:#ef4444"></div></div>
+      </div>
+
+      <div class="bar-row">
+        <div class="bar-label"><span>Rate limit</span><span id="br-rate">0</span></div>
+        <div class="bar-track"><div class="bar-fill" id="bf-rate" style="width:0%;background:#f59e0b"></div></div>
+      </div>
+
+      <div class="bar-row">
+        <div class="bar-label"><span>Replay detected</span><span id="br-replay">0</span></div>
+        <div class="bar-track"><div class="bar-fill" id="bf-replay" style="width:0%;background:#3b82f6"></div></div>
+      </div>
+
+      <div class="bar-row">
+        <div class="bar-label"><span>Sequence violation</span><span id="br-seq">0</span></div>
+        <div class="bar-track"><div class="bar-fill" id="bf-seq" style="width:0%;background:#a855f7"></div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Container health</div>
+      <div id="container-list">
+        <div class="container-row"><span>aegisot_gateway</span><span><span class="dot dot-green"></span><span class="green">healthy</span></span></div>
+        <div class="container-row"><span>aegisot_redis</span><span><span class="dot dot-green"></span><span class="green">healthy</span></span></div>
+        <div class="container-row"><span>aegisot_opcua</span><span><span class="dot dot-green"></span><span class="green">up</span></span></div>
+        <div class="container-row"><span>aegisot_dnp3</span><span><span class="dot dot-green"></span><span class="green">up</span></span></div>
+        <div class="container-row"><span>aegisot_lightsim</span><span><span class="dot dot-green"></span><span class="green">up</span></span></div>
+        <div class="container-row"><span>aegisot_prometheus</span><span><span class="dot dot-green"></span><span class="green">up</span></span></div>
+        <div class="container-row"><span>aegisot_grafana</span><span><span class="dot dot-green"></span><span class="green">up</span></span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row3">
+    <div class="card">
+      <div class="card-title">Last 10 audit decisions</div>
+      <table class="audit-table">
+        <thead>
+          <tr>
+            <th>Time</th>
+            <th>Source</th>
+            <th>Protocol</th>
+            <th>Point</th>
+            <th>Operation</th>
+            <th>Decision</th>
+            <th>Reason</th>
+          </tr>
+        </thead>
+        <tbody id="audit-body">
+          <tr><td colspan="7" style="text-align:center;padding:16px;color:#64748b">Loading...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">LightSim device state</div>
+      <div class="device-grid" id="device-grid">
+        <div class="device-item"><span class="device-name">loading...</span></div>
+      </div>
+
+      <div style="margin-top:14px">
+        <div class="card-title">Merkle root</div>
+        <div class="merkle-box" id="merkle-box">fetching...</div>
+        <button class="tamper-btn" onclick="tamperLog()">Simulate Tamper</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const GW='http://localhost:8000';
+const LS='http://localhost:8001';
+
+async function fetchHealth(){
+  try{
+    const d=await(await fetch(GW+'/health')).json();
+
+    document.getElementById('gw-status').textContent=d.status==='ok'?'Online':'Error';
+    document.getElementById('gw-status').className='metric-value '+(d.status==='ok'?'green':'red');
+    document.getElementById('gw-redis').textContent='Redis: '+(d.redis||'unknown');
+
+    const root=d.merkle_root||'';
+    const status=d.merkle_status || 'UNKNOWN';
+
+    document.getElementById('m-merkle-status').textContent=status;
+    document.getElementById('m-merkle-status').className =
+      'metric-value ' + (status === 'INTACT' ? 'green' : 'red');
+
+    document.getElementById('m-merkle-root').textContent=root?root.slice(0,16)+'...':'--';
+    document.getElementById('merkle-box').textContent=root||'--';
+  }catch(e){
+    document.getElementById('gw-status').textContent='Offline';
+    document.getElementById('gw-status').className='metric-value red';
+    document.getElementById('m-merkle-status').textContent='UNKNOWN';
+    document.getElementById('m-merkle-status').className='metric-value red';
+  }
+}
+
+function metricValue(text, metricName, labelText=''){
+  const lines=text.split('\n');
+  for(const line of lines){
+    if(line.startsWith(metricName)){
+      if(labelText && !line.includes(labelText)) continue;
+      const parts=line.trim().split(/\s+/);
+      return parseFloat(parts[parts.length-1]) || 0;
+    }
+  }
+  return 0;
+}
+
+async function fetchMetrics(){
+  try{
+    const text=await(await fetch(GW+'/metrics')).text();
+
+    const allowed=metricValue(text,'gateway_commands_allowed_total');
+    const acl=metricValue(text,'gateway_commands_blocked_total','reason="acl"');
+    const rate=metricValue(text,'gateway_commands_blocked_total','reason="rate_limit"');
+    const replay=metricValue(text,'gateway_commands_blocked_total','reason="replay"');
+    const seq=metricValue(text,'gateway_commands_blocked_total','reason="sequence"');
+
+    const blocked=acl+rate+replay+seq;
+    const total=allowed+blocked;
+
+    document.getElementById('m-allowed').textContent=Math.round(allowed);
+    document.getElementById('m-blocked').textContent=Math.round(blocked);
+    document.getElementById('m-block-pct').textContent=total>0?(blocked/total*100).toFixed(1)+'% block rate':'0% block rate';
+
+    document.getElementById('br-acl').textContent=Math.round(acl);
+    document.getElementById('br-rate').textContent=Math.round(rate);
+    document.getElementById('br-replay').textContent=Math.round(replay);
+    document.getElementById('br-seq').textContent=Math.round(seq);
+
+    const max=Math.max(acl,rate,replay,seq,1);
+    document.getElementById('bf-acl').style.width=(acl/max*100)+'%';
+    document.getElementById('bf-rate').style.width=(rate/max*100)+'%';
+    document.getElementById('bf-replay').style.width=(replay/max*100)+'%';
+    document.getElementById('bf-seq').style.width=(seq/max*100)+'%';
+  }catch(e){}
+}
+
+async function fetchDevices(){
+  try{
+    const d=await(await fetch(LS+'/state')).json();
+    document.getElementById('device-grid').innerHTML=Object.entries(d).map(([k,v])=>
+      '<div class="device-item"><span class="device-name">'+k+'</span><span class="device-val">'+v+'</span></div>'
+    ).join('');
+  }catch(e){}
+}
+
+function prettyReason(reason){
+  if(!reason) return '--';
+  return String(reason).replaceAll('_',' ');
+}
+
+function reasonBadge(reason){
+  const clean = prettyReason(reason);
+  let cls='badge-blue';
+
+  if(clean.includes('acl')) cls='badge-red';
+  else if(clean.includes('rate')) cls='badge-yellow';
+  else if(clean.includes('replay')) cls='badge-blue';
+  else if(clean.includes('sequence')) cls='badge-yellow';
+  else if(clean.includes('passed')) cls='badge-green';
+  else if(clean.includes('tampered')) cls='badge-red';
+
+  return '<span class="badge '+cls+'">'+clean+'</span>';
+}
+
+async function fetchAudit(){
+  try{
+    const entries=await(await fetch(GW+'/audit')).json();
+    const rows=entries.slice(-10).reverse();
+
+    if(rows.length === 0){
+      document.getElementById('audit-body').innerHTML =
+        '<tr><td colspan="7" style="text-align:center;padding:12px;color:#64748b">No audit data yet</td></tr>';
+      return;
+    }
+
+    document.getElementById('audit-body').innerHTML=rows.map(e=>{
+      const en=e.entry||e;
+      const allowed=en.decision?.allowed;
+      const reason=en.decision?.reason || en.reason || '--';
+      const ts=new Date(en.ts*(en.ts>1e12?1:1000)).toLocaleTimeString();
+
+      const badge=allowed
+        ? '<span class="badge badge-green">allowed</span>'
+        : '<span class="badge badge-red">blocked</span>';
+
+      return '<tr>'
+        + '<td>'+ts+'</td>'
+        + '<td>'+(en.source||'--')+'</td>'
+        + '<td>'+(en.protocol||'--')+'</td>'
+        + '<td>'+(en.point||'--')+'</td>'
+        + '<td>'+(en.operation||'--')+'</td>'
+        + '<td>'+badge+'</td>'
+        + '<td>'+reasonBadge(reason)+'</td>'
+        + '</tr>';
+    }).join('');
+  }catch(e){
+    document.getElementById('audit-body').innerHTML =
+      '<tr><td colspan="7" style="text-align:center;padding:12px;color:#64748b">No audit data</td></tr>';
+  }
+}
+
+async function tamperLog(){
+  try{
+    await fetch(GW+'/tamper', {method:'POST'});
+    await fetchAll();
+    alert('Tamper simulated. Merkle status should become BROKEN.');
+  }catch(e){
+    alert('Tamper failed. Make sure /tamper endpoint exists in gateway.py');
+  }
+}
+
+async function fetchAll(){
+  await Promise.all([fetchHealth(),fetchMetrics(),fetchDevices(),fetchAudit()]);
+  document.getElementById('last-update').textContent='Updated: '+new Date().toLocaleTimeString();
+}
+
+fetchAll();
+setInterval(fetchAll,5000);
+</script>
+
+</body>
+</html>

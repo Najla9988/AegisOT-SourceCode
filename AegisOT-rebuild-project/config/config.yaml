@@ -1,0 +1,36 @@
+# AegisOT - Main Configuration
+# All containers read this file via the shared Docker volume at /app/config/
+
+gateway:
+  host: gateway        # Docker service name resolves on the bridge network
+  port: 8000
+
+redis:
+  host: redis
+  port: 6379
+
+opcua:
+  port: 4840
+  source_id: scada_hmi   # Identity this adapter presents to the gateway
+
+dnp3:
+  port: 20000
+  source_id: scada_master
+
+security:
+  # Replay window: reject any payload hash seen within this many seconds
+  replay_ttl_seconds: 30
+
+  # Sequence: any seq <= last_seen is rejected
+  sequence_strict: true
+
+  # Rate-limiting: maximum commands per source per minute
+  rate_limit_per_minute: 60
+
+monitoring:
+  prometheus_port: 9090
+  grafana_port: 3000
+
+logging:
+  level: INFO
+  audit_file: /app/logs/audit.jsonl

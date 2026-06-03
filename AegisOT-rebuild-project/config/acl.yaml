@@ -1,0 +1,141 @@
+# AegisOT - Per-Point Access Control Lists
+#
+# Each rule grants (source, protocol, point, operations).
+# The gateway denies anything NOT explicitly listed here.
+#
+# Principle: least-privilege — operators get only what
+# they need, and attackers from unlisted sources are denied.
+
+acl:
+  # --- SCADA HMI (OPC UA northbound) ---
+  - source:     scada_hmi
+    protocol:   opcua
+    point:      breaker_status_1
+    operations: [read]
+
+  - source:     scada_hmi
+    protocol:   opcua
+    point:      analog_input_1
+    operations: [read]
+
+  - source:     scada_hmi
+    protocol:   opcua
+    point:      analog_input_2
+    operations: [read]
+
+  - source:     scada_hmi
+    protocol:   opcua
+    point:      temperature_sensor_1
+    operations: [read]
+
+  - source:     scada_hmi
+    protocol:   opcua
+    point:      valve_position_1
+    operations: [read, write]
+
+  - source:     scada_hmi
+    protocol:   opcua
+    point:      breaker_status_5
+    operations: [read]
+
+  # --- SCADA Master (DNP3 southbound) ---
+  - source:     scada_master
+    protocol:   dnp3
+    point:      breaker_status_5
+    operations: [read, operate, select]
+
+  - source:     scada_master
+    protocol:   dnp3
+    point:      analog_output_1
+    operations: [read, write]
+
+  - source:     scada_master
+    protocol:   dnp3
+    point:      analog_output_2
+    operations: [read, write]
+
+  - source:     scada_master
+    protocol:   dnp3
+    point:      digital_output_1
+    operations: [read, operate]
+
+  # --- Engineering workstation ---
+  - source:     eng_workstation
+    protocol:   opcua
+    point:      analog_input_1
+    operations: [read, write]
+
+  - source:     eng_workstation
+    protocol:   dnp3
+    point:      analog_output_1
+    operations: [read]
+
+  # --- DNP3 master field polling ---
+  - source:     dnp3_master
+    protocol:   dnp3
+    point:      breaker_status_1
+    operations: [read, operate]
+
+  - source:     dnp3_master
+    protocol:   dnp3
+    point:      breaker_status_2
+    operations: [read, operate]
+
+  - source:     dnp3_master
+    protocol:   dnp3
+    point:      breaker_status_3
+    operations: [read, operate]
+
+  - source:     dnp3_master
+    protocol:   dnp3
+    point:      analog_input_1
+    operations: [read]
+
+  - source:     dnp3_master
+    protocol:   dnp3
+    point:      analog_input_2
+    operations: [read]
+
+  # --- Monitoring agent (OPC UA read-only) ---
+  - source:     monitoring_agent
+    protocol:   opcua
+    point:      analog_input_1
+    operations: [read]
+
+  - source:     monitoring_agent
+    protocol:   opcua
+    point:      analog_input_2
+    operations: [read]
+
+  - source:     monitoring_agent
+    protocol:   opcua
+    point:      breaker_status_1
+    operations: [read]
+
+  - source:     monitoring_agent
+    protocol:   opcua
+    point:      breaker_status_2
+    operations: [read]
+
+  - source:     monitoring_agent
+    protocol:   opcua
+    point:      valve_position_1
+    operations: [read]
+
+  - source:     monitoring_agent
+    protocol:   opcua
+    point:      temperature_sensor_1
+    operations: [read]
+
+  - source:     monitoring_agent
+    protocol:   opcua
+    point:      analog_output_1
+    operations: [read]
+
+  - source:     flood_test_source
+    protocol:   opcua
+    point:      analog_input_1
+    operations: [read]
+ 
+# NOTE: attacker_vm, unknown, or any unlisted source gets
+#       no rules and is automatically denied by the ACL check.
